@@ -1,0 +1,75 @@
+============================================================
+DOCUMENTO: 01_MANUALES_CONTROLADORES_Y_SOPORTE_TECNICO_NVIDIA
+CATEGORIA: Soporte Tecnico, Instalacion de Drivers, Solucion de Errores y Garantias
+============================================================
+
+=== SECCION 1: INSTALACION DE DRIVERS GEFORCE Y WORKSTATION ===
+
+1.1. Descarga Oficial de Controladores NVIDIA:
+Todos los controladores oficiales de NVIDIA deben descargarse exclusivamente desde el portal oficial en https://www.nvidia.com/Download/index.aspx o mediante la aplicacion NVIDIA App (anteriormente GeForce Experience). El usuario debe seleccionar la serie de su producto (ej. GeForce RTX 40 Series, RTX 30 Series o NVIDIA RTX / Quadro), el modelo especifico (ej. RTX 4090, RTX 4070 SUPER) y el sistema operativo exacto.
+
+1.2. Opciones de Instalacion Express vs Personalizada:
+- Instalacion Express (Recomendada para usuarios generales): Actualiza automaticamente los controladores graficos, PhysX y HD Audio conservando las configuraciones actuales del Panel de Control de NVIDIA.
+- Instalacion Personalizada (Avanzada): Permite seleccionar que componentes especificos instalar (Driver de graficos, Audio HD, Software del sistema PhysX) e incluye la casilla critica "Realizar una instalacion correcta" (Clean Installation), la cual borra todos los perfiles previos y restaura los valores de fabrica antes de escribir el nuevo driver.
+
+1.3. Punto de Restauracion del Sistema y Buenas Practicas:
+Antes de ejecutar el instalador (.exe) del controlador NVIDIA, es obligatorio crear un Punto de Restauracion de Windows y cerrar todas las aplicaciones que utilicen aceleracion por hardware (navegadores web, Discord, motores de renderizado o software de monitoreo como MSI Afterburner) para evitar bloqueos de escritura en el registro del sistema.
+
+=== SECCION 2: DESINSTALACION LIMPIA CON DDU (DISPLAY DRIVER UNINSTALLER) ===
+
+2.1. Que es DDU y cuando utilizarlo:
+Display Driver Uninstaller (DDU) es la herramienta estandar de soporte tecnico para eliminar por completo restos de controladores graficos corruptos, claves de registro huerfanas y carpetas residuales de NVIDIA o AMD. Se debe utilizar siempre que ocurran pantallazos azules (BSOD), caidas bruscas de FPS tras actualizar, o al cambiar de tarjeta grafica (por ejemplo, pasar de una RTX 3080 a una RTX 4080 SUPER).
+
+2.2. Requisito de Modo Seguro (Safe Mode):
+Para garantizar que Windows no bloquee archivos `.dll` ni `.sys` en uso ni descargue drivers genericos automaticamente desde Windows Update durante el proceso, DDU debe ejecutarse estrictamente con el sistema iniciado en Modo Seguro sin funciones de red.
+
+2.3. Flujo Paso a Paso de Desinstalacion con DDU:
+1. Reiniciar el equipo entrando en Modo Seguro de Windows (Configuracion > Recuperacion > Inicio avanzado).
+2. Desconectar el cable Ethernet o desactivar el Wi-Fi temporalmente para bloquear instalaciones automaticas de Windows Update.
+3. Abrir Display Driver Uninstaller (DDU), seleccionar tipo de dispositivo "GPU" y fabricante "NVIDIA".
+4. Hacer clic en la opcion principal: "Limpiar y reiniciar ( Altamente recomendado )".
+5. Una vez que el sistema reinicie en modo normal, instalar el controlador NVIDIA previamente descargado (ej. version 552.22 WHQL) y reconectar internet.
+
+=== SECCION 3: SOLUCIONES DE PROBLEMAS COMUNES (TROUBLESHOOTING) ===
+
+3.1. Problema 1 - Codigo de Error 43 en el Administrador de Dispositivos:
+- Sintoma: Windows detiene el dispositivo NVIDIA e informa "Windows detuvo este dispositivo porque informo de problemas (Codigo 43)". La resolucion de pantalla baja y no se detecta aceleracion 3D.
+- Causas probables: Corrupcion del driver, cable de alimentacion 12VHPWR o PCIe de 8 pines mal insertado, BIOS de placa base desactualizada o fallo fisico en VRAM.
+- Solucion tecnica: Verificar fisicamente que el conector de la fuente de poder este insertado a fondo sin dobleces. Realizar limpieza con DDU en Modo Seguro y reinstalar el driver estable 552.22. Si persiste, probar la GPU en otra ranura PCIe x16.
+
+3.2. Problema 2 - Pantalla Negra durante o despues de instalar el Driver:
+- Sintoma: El monitor pierde señal de video (No Signal) y queda en negro de forma permanente tras el parpadeo normal de instalacion del controlador.
+- Causas probables: Conflicto con la tasa de refresco del monitor (DisplayPort 1.4 / HDMI 2.1), cable de video defectuoso o firmware desactualizado en tarjetas RTX serie 30/40.
+- Solucion tecnica: Presionar la combinacion de teclas `Win + Ctrl + Shift + B` para reiniciar el subsistema grafico de Windows. Si no responde, desconectar y reconectar el cable DisplayPort/HDMI, cambiar temporalmente de puerto en la GPU o forzar apagado, entrar en Modo Seguro y aplicar DDU.
+
+3.3. Problema 3 - Incompatibilidad de Version de Windows o Fallo del Instalador NVIDIA:
+- Sintoma: El instalador muestra el mensaje "Este controlador de graficos NVIDIA no es compatible con esta version de Windows" o "Este controlador no pudo encontrar hardware grafico compatible".
+- Causas probables: Descarga de un driver de arquitectura DCH en un sistema antiguo Standard, version de Windows 10/11 inferior a la compilacion 21H2, o intento de instalar un driver de escritorio en una GPU de laptop (Mobile).
+- Solucion tecnica: Ejecutar `winver` en Windows para confirmar que el sistema sea de 64 bits y este actualizado (minimo Windows 10 22H2 o Windows 11 23H2). Asegurarse de descargar la variante DCH de 64 bits correspondiente al modelo exacto de GPU.
+
+3.4. Problema 4 - Cierres Inesperados por TDR (Timeout Detection and Recovery - nvlddmkm.sys):
+- Sintoma: Los juegos o aplicaciones de renderizado se cierran al escritorio o congelan el equipo registrando en el Visor de Eventos de Windows el error "El controlador de pantalla nvlddmkm dejo de responder y se recupero correctamente".
+- Solucion tecnica: Revertir cualquier overclock en GPU o VRAM, activar el "Modo de depuracion" en el menu Ayuda del Panel de Control de NVIDIA y cambiar el "Modo de control de energia" a "Preferir rendimiento maximo".
+
+=== SECCION 4: VERSIONES DE DRIVERS: ESTABLES (WHQL) VS BETA Y GAME READY VS STUDIO ===
+
+4.1. Versiones Estables (WHQL) vs Versiones Beta / Hotfix:
+- Versiones Estables WHQL (Recomendadas): Certificadas por Microsoft Windows Hardware Quality Labs. Pasan por pruebas exhaustivas de estabilidad y se publican con una frecuencia de 2 a 4 semanas (mensuales o quincenales segun lanzamientos de juegos). Son las recomendadas para el 99% de los usuarios y entornos empresariales.
+- Versiones Beta y GeForce Hotfix: Publicadas cada pocas semanas de forma intercalada para corregir errores urgentes muy especificos reportados por la comunidad antes del siguiente paquete WHQL mensual. Solo deben instalarse si el usuario sufre exactamente el fallo descrito en las notas del parche.
+
+4.2. Diferencia entre Game Ready Drivers (GRD) y Studio Drivers (SD):
+- Game Ready Drivers: Optimizados para ofrecer parches de dia cero (Day-0) en los ultimos lanzamientos de videojuegos con soporte DLSS 3.5, Frame Generation y Reflex.
+- NVIDIA Studio Drivers: Enfocados en creadores de contenido, arquitectos e ingenieros de datos. Priorizan la estabilidad extrema en flujos de trabajo multiproceso en Blender, Maya, DaVinci Resolve, Adobe Premiere Pro y Unreal Engine 5, con ciclos de validacion mas largos.
+
+=== SECCION 5: SOPORTE DE SISTEMAS OPERATIVOS, DIRECTX Y GARANTIA (RMA) ===
+
+5.1. Matriz de Soporte de Sistemas Operativos:
+- Windows 11 y Windows 10 (64 bits): Soporte completo y altamente recomendado para todas las arquitecturas actuales (Turing, Ampere, Ada Lovelace y Blackwell). Requiere Windows 11 para aprovechar Auto HDR y DirectStorage optimizado.
+- Linux (64 bits - Ubuntu, RHEL, Debian, Fedora): NVIDIA ofrece tanto controladores propietarios cerrados de alto rendimiento para CUDA/IA como modulos de kernel de codigo abierto (Open GPU Kernel Modules) recomendados a partir de las arquitecturas Turing, Ampere, Ada Lovelace y Hopper/Blackwell.
+- Windows 7 y Windows 8/8.1: Fin de soporte definitivo (End of Life). La ultima version estandar compatible con arquitecturas legadas fue la version 391.35 (para Fermi) y la rama 474.xx/475.xx solo para parches criticos de seguridad sin soporte para nuevas funciones ni serie RTX 40.
+
+5.2. Requisitos de DirectX 12 Ultimate:
+El soporte completo de DirectX 12 Ultimate (Ray Tracing por hardware DXR 1.1, Variable Rate Shading, Mesh Shaders y Sampler Feedback) es requerido por los motores graficos modernos y esta soportado nativamente en tarjetas GeForce RTX serie 20 (Turing), RTX serie 30 (Ampere) y RTX serie 40 (Ada Lovelace).
+
+5.3. Politica de Garantia y Proceso RMA de Soporte al Cliente:
+Las tarjetas graficas NVIDIA Founders Edition y modelos de ensambladoras oficiales cuentan con una garantia limitada de 3 años a partir de la fecha de factura. El proceso de RMA cubre defectos de fabricacion en nucleo, VRAM y sistema de refrigeracion, pero queda anulado ante daños fisicos por mala instalacion del conector 12VHPWR, modificacion de BIOS no autorizada o daño por liquidos.

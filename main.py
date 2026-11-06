@@ -39,7 +39,7 @@ load_dotenv()
 #  ✏️ MODIFICA AQUÍ — Metadata de tu API
 #  Esto aparece en la documentación Swagger
 # ═══════════════════════════════════════════════════════════
-NOMBRE_AGENTE = os.getenv("AGENT_NAME", "Agente el Maná")
+NOMBRE_AGENTE = os.getenv("AGENT_NAME", "RetroTron")
 
 app = FastAPI(
     title=f"API — {NOMBRE_AGENTE}",

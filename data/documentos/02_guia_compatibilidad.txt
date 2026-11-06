@@ -1,0 +1,69 @@
+============================================================
+DOCUMENTO: 02_GUIA_COMPATIBILIDAD_HARDWARE_Y_ENSAMBLES_NVIDIA
+CATEGORIA: Compatibilidad de Hardware, Fuentes de Poder, Sockets, Puertos y Armado de PCs
+============================================================
+
+=== SECCION 1: SOCKETS, PLACAS BASE (MOTHERBOARDS) Y BUS PCIE ===
+
+1.1. Socket Intel LGA 1700 y LGA 1851 (Plataforma Mainstream y Entusiasta Intel):
+Compatible con procesadores Intel Core de 12va, 13va y 14va generacion (chipsets Z690, B760, Z790) y Core Ultra (Z890). Ofrece lineas nativas PCIe 5.0 y PCIe 4.0 x16, asi como soporte para memoria DDR5 de alta velocidad y Resizable BAR (ReBAR), indispensable para exprimir el rendimiento de la serie GeForce RTX 40.
+
+1.2. Socket AMD AM5 y AM4 (Plataforma Mainstream y Gaming AMD):
+- Socket AM5 (Chipsets B650, X670E, X870E): Diseñado para procesadores AMD Ryzen series 7000 y 9000 (incluyendo modelos 3D V-Cache como el Ryzen 7 7800X3D). Provee conectividad PCIe 5.0/4.0 x16 nativa y soporte exclusivo para DDR5, evitando cualquier cuello de botella en tarjetas como la RTX 4080 SUPER y RTX 4090.
+- Socket AM4 (Chipsets B550, X570): Plataforma DDR4 altamente popular (ej. Ryzen 7 5700X3D, Ryzen 7 5800X3D o Ryzen 7 5700G). En placas B550 con procesadores compatibles soporta PCIe 4.0 x16 (o PCIe 3.0 x16 en APUs serie G), siendo una base excelente para tarjetas de gama media y media-alta como RTX 3060, RTX 4060, RTX 4060 Ti y RTX 4070.
+
+1.3. Sockets HEDT y Workstation (AMD sTR5 / TRX40 / WRX80 / WRX90 e Intel LGA 4677):
+Orientados a procesadores AMD Ryzen Threadripper PRO e Intel Xeon W. Cuentan con entre 64 y 128 lineas PCIe 5.0/4.0, permitiendo instalar multiples GPUs de alto consumo como NVIDIA RTX 6000 Ada Generation, RTX 5000 Ada o aceleradoras H100/L4 trabajando a velocidad completa x16 simultaneamente para renderizado e IA local.
+
+=== SECCION 2: REQUERIMIENTOS DE FUENTE DE PODER (PSU) POR MODELO DE GPU ===
+
+2.1. Especificaciones de Energia para Serie GeForce RTX 40 y RTX 40 SUPER (Ada Lovelace):
+- NVIDIA GeForce RTX 4090 (TDP 450W): Fuente de poder minima de 850W; fuente recomendada de 1000W o superior con certificacion 80 Plus Gold/Platinum y estandar ATX 3.0 / ATX 3.1 nativo.
+- NVIDIA GeForce RTX 4080 SUPER (TDP 320W): Fuente de poder minima de 750W; fuente recomendada de 850W ATX 3.0.
+- NVIDIA GeForce RTX 4080 16GB (TDP 320W): Fuente de poder minima de 750W; fuente recomendada de 850W.
+- NVIDIA GeForce RTX 4070 Ti SUPER (TDP 285W): Fuente de poder minima de 700W; fuente recomendada de 750W.
+- NVIDIA GeForce RTX 4070 Ti (TDP 285W): Fuente de poder minima de 700W; fuente recomendada de 750W.
+- NVIDIA GeForce RTX 4070 SUPER (TDP 220W): Fuente de poder minima de 650W; fuente recomendada de 750W.
+- NVIDIA GeForce RTX 4070 (TDP 200W): Fuente de poder minima de 650W; fuente recomendada de 750W.
+- NVIDIA GeForce RTX 4060 Ti 8GB / 16GB (TDP 160W-165W): Fuente de poder minima de 550W; fuente recomendada de 650W.
+- NVIDIA GeForce RTX 4060 (TDP 115W): Fuente de poder minima de 550W; fuente recomendada de 600W.
+
+2.2. Especificaciones de Energia para Serie GeForce RTX 30 (Ampere) y Workstation:
+- NVIDIA GeForce RTX 3090 (TDP 350W): Fuente de poder minima de 750W; fuente recomendada de 850W a 1000W debido a los picos transitorios de corriente de la arquitectura Ampere.
+- NVIDIA GeForce RTX 3080 (TDP 320W): Fuente de poder minima de 750W; fuente recomendada de 850W.
+- NVIDIA GeForce RTX 3070 (TDP 220W): Fuente de poder minima de 600W; fuente recomendada de 650W.
+- NVIDIA GeForce RTX 3060 12GB (TDP 170W): Fuente de poder minima de 550W; fuente recomendada de 600W.
+- NVIDIA RTX 6000 Ada Generation (TDP 300W): Fuente de poder minima de 750W; fuente recomendada de 850W grado Workstation.
+
+=== SECCION 3: CONEXIONES DE VIDEO Y PUERTOS DE ENERGIA ===
+
+3.1. Salidas de Video y Capacidades de Resolucion:
+- HDMI 2.1a: Soporta ancho de banda de hasta 48 Gbps, permitiendo resolucion 4K a 120Hz o 144Hz sin compresion, 8K a 60Hz con DSC, tasa de refresco variable (VRR / G-SYNC Compatible) y modo automatico de baja latencia (ALLM).
+- DisplayPort 1.4a: Incluye soporte para Display Stream Compression (DSC 1.2a), permitiendo monitores gaming 4K hasta 240Hz, 1440p hasta 360Hz y pantallas profesionales 8K HDR a 60Hz.
+- USB-C (VirtualLink / DisplayPort Alt Mode): Presente en tarjetas seleccionadas serie RTX 20 y sistemas portatiles/Workstation para transmision de video DisplayPort, datos y energia en un solo cable.
+
+3.2. Conectores de Alimentacion PCIe y 12VHPWR / 12V-2x6:
+- Conector de 16 pines (12VHPWR / 12V-2x6): Estandar en RTX 4090, RTX 4080 SUPER, RTX 4080, RTX 4070 Ti SUPER y RTX 4070 SUPER. Entrega hasta 600W por un solo cable desde fuentes ATX 3.0/3.1. Si se usa el adaptador incluido a cables PCIe de 8 pines tradicionales, se debe conectar un cable independiente desde la fuente por cada entrada de 8 pines (no usar conectores en cadena o "daisy-chain").
+- Conector PCIe tradicional de 8 pines: Utilizado en RTX 4060, RTX 4060 Ti, modelos personalizados de RTX 4070 y la serie RTX 3080/3070/3060.
+
+=== SECCION 4: COMPATIBILIDAD CPU-GPU Y RECOMENDACIONES DE ENSAMBLES (SIN CUELLO DE BOTELLA) ===
+
+4.1. Ensamble Entusiasta 4K Ultra e IA Local (Presupuesto Alto - Sin Cuello de Botella):
+- Combinacion recomendada: NVIDIA GeForce RTX 4090 24GB o RTX 4080 SUPER 16GB emparejada con procesador Intel Core i9-13900K / i9-14900K o AMD Ryzen 9 7950X / Ryzen 7 7800X3D.
+- Requisitos adicionales: 32GB a 64GB de RAM DDR5 (6000 MT/s), placa base Z790 o X670E con fases de alimentacion (VRM) robustas para overclocking y gabinete Full-Tower o Mid-Tower amplio (minimo 355 mm de espacio libre para GPU).
+
+4.2. Ensamble Balanceado 1440p Competitivo y Creacion de Contenido (Presupuesto Medio-Alto):
+- Combinacion recomendada: NVIDIA GeForce RTX 4070 SUPER 12GB, RTX 4070 Ti SUPER 16GB o RTX 4070 12GB emparejada con procesador Intel Core i5-13600K / i5-14600K o AMD Ryzen 7 7700X / Ryzen 7 7800X3D.
+- Requisitos adicionales: 32GB de RAM DDR5, fuente de 750W 80 Plus Gold y monitor 1440p (2K) de 165Hz+ con G-SYNC.
+
+4.3. Ensamble de Entrada Optimizado 1080p Ultra y Desarrollo (Presupuesto Accesible):
+- Combinacion recomendada: NVIDIA GeForce RTX 4060 8GB o RTX 3060 12GB emparejada con procesador AMD Ryzen 5 5600X, Ryzen 7 5700G/5700X o Intel Core i5-12400F / i5-13400F en placa B550 o B760 con 16GB/32GB de RAM DDR4/DDR5.
+
+=== SECCION 5: CONFIGURACIONES MULTI-GPU Y ESCALADO PROFESIONAL ===
+
+5.1. Estado de SLI y NVLink en el Mercado de Consumo:
+Las tecnologias multi-GPU tradicionales SLI y NVLink para videojuegos han sido descontinuadas en el segmento de consumo. La NVIDIA GeForce RTX 3090 / RTX 3090 Ti (arquitectura Ampere) fue la ultima tarjeta grafica de consumo en incluir dedos fisicos de conexion NVLink. Ninguna tarjeta de la serie GeForce RTX 40 (incluida la RTX 4090) soporta puentes NVLink.
+
+5.2. Alternativas Profesionales para Multi-GPU (Renderizado e IA):
+- Renderizado Distribuido y Entrenamiento de LLMs via PCIe: Aplicaciones como Blender (Cycles), OctaneRender, V-Ray, PyTorch y TensorFlow pueden utilizar 2 o mas GPUs (ej. 2x RTX 4090 o 2x RTX 6000 Ada) a traves del bus PCIe 4.0/5.0 sin necesidad de puente NVLink, sumando la potencia de computo CUDA/OptiX.
+- NVLink de Cuarta y Quinta Generacion y NVSwitch (Data Center): Reservado para aceleradoras empresariales NVIDIA H100, H200, B100 y B200, permitiendo interconectar hasta 8 o 72 GPUs como una sola unidad logica de memoria compartida con hasta 1.8 TB/s de ancho de banda bidireccional por GPU.

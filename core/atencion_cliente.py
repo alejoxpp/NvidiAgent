@@ -1,23 +1,20 @@
-"""
-core/atencion_cliente.py — Sub-grafo multiagente de atención al cliente
-Industria de Alimentos el Mana · Integrado al despliegue FastAPI existente.
+"""core/atencion_cliente.py — Sub-grafo multiagente de atención al cliente
+RetroTron · InvidiAgent · Soluciones de Computación e IA de NVIDIA
 
-Las bases de conocimiento se cargan dinámicamente desde PDFs en
-data/documentos/:
+Las bases de conocimiento se cargan desde TXT y usan PDFs homónimos como
+respaldo en data/documentos/:
 
-  KB_EMPRESA   ← 01_politica_comercial.pdf + 04_plan_estrategico.pdf
-  KB_PRODUCTOS ← 05_catalogo_productos.pdf
+   KB_EMPRESA   ← manuales_controladores.pdf + guia_compatibilidad.pdf
+   KB_PRODUCTOS ← catalogo_productos_nvidia.pdf
 
 Flujo:
-  START → supervisor → greeting_worker → company_worker
-        → products_worker → fallback_worker → aggregator → END
+   START → supervisor → greeting_worker → company_worker
+         → products_worker → fallback_worker → aggregator → END
 """
 
 import os
-import operator
 from pathlib import Path
-from typing_extensions import TypedDict, Annotated
-
+from typing import TypedDict
 from pydantic import BaseModel, Field
 from langchain_core.messages import SystemMessage, HumanMessage, AnyMessage
 from langchain_community.document_loaders import PyPDFLoader
@@ -26,39 +23,46 @@ from langgraph.graph import StateGraph, START, END
 from s6_llm_factory import crear_llm
 
 
-# ═══════════════════════════════════════════════════════════
-#  CARGA DE BASES DE CONOCIMIENTO DESDE PDFs
-# ═══════════════════════════════════════════════════════════
+# ════════════════════════════════════════════════════════════
+#  CARGA DE BASES DE CONOCIMIENTO DESDE TXT/PDF
+# ════════════════════════════════════════════════════════════
+# Rutas a los archivos de conocimiento NVIDIA
+PROJECT_DIR = Path(__file__).resolve().parents[1]
 DOCUMENTOS_DIR = Path(os.getenv("DOCUMENTOS_DIR", "data/documentos"))
+if not DOCUMENTOS_DIR.is_absolute():
+    DOCUMENTOS_DIR = PROJECT_DIR / DOCUMENTOS_DIR
 
 PDFS_KB_EMPRESA = [
-    os.getenv("PDF_KB_EMPRESA_1", "01_politica_comercial.pdf"),
-    os.getenv("PDF_KB_EMPRESA_2", "04_plan_estrategico.pdf"),
+    os.getenv("PDF_KB_EMPRESA_1", "01_manuales_controladores.txt"),
+    os.getenv("PDF_KB_EMPRESA_2", "02_guia_compatibilidad.txt"),
 ]
-PDF_KB_PRODUCTOS = os.getenv("PDF_KB_PRODUCTOS", "05_catalogo_productos.pdf")
+PDF_KB_PRODUCTOS = os.getenv("PDF_KB_PRODUCTOS", "03_catalogo_productos.txt")
 
 
-def _cargar_pdf_texto(nombre_archivo: str) -> str:
-    """Lee un PDF completo y devuelve su texto. Vacío si falla."""
+
+def _cargar_documento_texto(nombre_archivo: str) -> str:
+    """Lee TXT directamente o extrae texto de un PDF."""
     ruta = DOCUMENTOS_DIR / nombre_archivo
     if not ruta.exists():
-        print(f"  ⚠️  [ATENCIÓN CLIENTE] No se encontró {ruta}")
-        return ""
+        respaldo = ruta.with_suffix(".pdf") if ruta.suffix.lower() == ".txt" else None
+        if respaldo and respaldo.exists():
+            ruta = respaldo
+        else:
+            return ""
     try:
+        if ruta.suffix.lower() == ".txt":
+            return ruta.read_text(encoding="utf-8")
         paginas = PyPDFLoader(str(ruta)).load()
-        texto = "\n\n".join(p.page_content for p in paginas if p.page_content.strip())
-        print(f"  📄 [ATENCIÓN CLIENTE] KB cargada: {nombre_archivo} ({len(paginas)} pág.)")
-        return texto
-    except Exception as e:
-        print(f"  ⚠️  [ATENCIÓN CLIENTE] Error leyendo {ruta}: {e}")
+        return "\n\n".join(p.page_content for p in paginas if p.page_content.strip())
+    except Exception:
         return ""
 
 
-def _cargar_multiples(nombres: list) -> str:
-    """Carga varios PDFs y los concatena con un separador claro."""
+def _cargar_multiples(nombres: list[str]) -> str:
+    """Carga varios documentos y los concatena con un separador claro."""
     bloques = []
     for n in nombres:
-        texto = _cargar_pdf_texto(n)
+        texto = _cargar_documento_texto(n)
         if texto:
             bloques.append(f"### Documento: {n}\n\n{texto}")
     return "\n\n".join(bloques)
@@ -66,43 +70,38 @@ def _cargar_multiples(nombres: list) -> str:
 
 # Se ejecutan UNA sola vez al importar el módulo
 KB_EMPRESA = _cargar_multiples(PDFS_KB_EMPRESA)
-KB_PRODUCTOS = _cargar_pdf_texto(PDF_KB_PRODUCTOS)
+KB_PRODUCTOS = _cargar_documento_texto(PDF_KB_PRODUCTOS)
 
 if not KB_EMPRESA:
-    KB_EMPRESA = "(No se pudo cargar la información de la empresa desde los PDFs.)"
+    KB_EMPRESA = "(No se pudo cargar la información de soporte.)"
 if not KB_PRODUCTOS:
-    KB_PRODUCTOS = "(No se pudo cargar el catálogo de productos desde el PDF.)"
+    KB_PRODUCTOS = "(No se pudo cargar el catálogo.)"
 
 
-# ═══════════════════════════════════════════════════════════
+# ════════════════════════════════════════════════════════════
 #  DOMINIOS SOPORTADOS (para el fallback)
-# ═══════════════════════════════════════════════════════════
+# ════════════════════════════════════════════════════════════
 DOMINIOS_SOPORTADOS = """
-- 👋 Saludos y conversación casual.
-- 🏢 Información de la empresa: sedes, direcciones, misión, visión, horarios y contacto.
-- 🛒 Productos: catálogo, precios, menú, disponibilidad y combos.
+- 👋 Saludos y conversación sobre tecnología y computación.
+- 🏢 Información sobre productos NVIDIA: GeForce, RTX, Quadro, Drive, IA.
+- 🛒 Consultas de catálogo: especificaciones, precios, disponibilidad.
+- ⚙️ Soporte técnico: drivers, instalación, resolución de problemas.
+- 📦 Políticas: garantías, devoluciones, RMA para productos NVIDIA.
 """
 
 
-# ═══════════════════════════════════════════════════════════
-#  CONTRATO: Clasificación del supervisor
-# ═══════════════════════════════════════════════════════════
+# ════════════════════════════════════════════════════════════
+#  CONTRATO: Clasificación
+# ═════════════════════════════════════════════════════════════
 class QuestionClassification(BaseModel):
-    greeting: str = Field(default="", description="Saludo o conversación casual. Vacío si no hay.")
-    company: str = Field(default="", description="Preguntas sobre la empresa. Vacío si no hay.")
-    products: str = Field(default="", description="Preguntas sobre productos/precios. Vacío si no hay.")
-    other: str = Field(
-        default="",
-        description=("Preguntas fuera de alcance (clima, deportes, política, "
-                     "noticias, otras empresas, cultura general). Vacío si no hay."),
-    )
+    greeting: str = Field(default="", description="Saludo o conversación casual.")
+    company: str = Field(default="", description="Preguntas sobre productos NVIDIA.")
+    products: str = Field(default="", description="Preguntas sobre catálogo y especificaciones.")
+    other: str = Field(default="", description="Fuera de alcance o consultas no técnicas.")
 
 
-# ═══════════════════════════════════════════════════════════
-#  ESTADO COMPARTIDO
-# ═══════════════════════════════════════════════════════════
-class CustomerState(TypedDict):
-    messages: Annotated[list[AnyMessage], operator.add]
+class CustomerState(TypedDict, total=False):
+    messages: list[AnyMessage]
     greeting_question: str
     company_question: str
     products_question: str
@@ -114,126 +113,97 @@ class CustomerState(TypedDict):
     final_response: str
 
 
-# ═══════════════════════════════════════════════════════════
-#  NODOS
-# ═══════════════════════════════════════════════════════════
 def supervisor(state: CustomerState) -> dict:
-    user_msg = state["messages"][-1].content
-    llm = crear_llm(temperature=0.0)
-    classifier = llm.with_structured_output(QuestionClassification)
-
-    try:
-        result = classifier.invoke([
-            SystemMessage(content=(
-                "Eres el supervisor de atención al cliente de Industria de Alimentos el Mana.\n"
-                "El cliente puede mandar UN solo mensaje con varias preguntas mezcladas.\n\n"
-                "Clasifica cada parte del mensaje en:\n"
-                "- greeting: saludos, despedidas, conversación casual\n"
-                "- company: sedes, dirección, misión, visión, horarios, contacto\n"
-                "- products: productos, precios, menú, disponibilidad, combos\n"
-                "- other: TODO lo que no encaje (clima, deportes, política, otras empresas...)\n\n"
-                "Copia el texto EXACTO de cada pregunta en su campo.\n"
-                "Si una categoría no aplica, déjala vacía.\n"
-                "IMPORTANTE: ante duda entre company/products y other, prefiere la específica."
-            )),
-            HumanMessage(content=f"Mensaje del cliente:\n{user_msg}"),
-        ])
-        return {
-            "greeting_question": result.greeting,
-            "company_question": result.company,
-            "products_question": result.products,
-            "other_question": result.other,
-        }
-    except Exception:
-        return {
-            "greeting_question": "",
-            "company_question": user_msg,
-            "products_question": "",
-            "other_question": "",
-        }
-
-
-def greeting_worker(state: CustomerState) -> dict:
-    question = state.get("greeting_question", "")
-    if not question.strip():
-        return {"greeting_response": ""}
-    llm = crear_llm(temperature=0.3)
-    response = llm.invoke([
+    """Clasifica el mensaje actual para los workers de atención."""
+    pregunta = state["messages"][-1].content
+    prompt = [
         SystemMessage(content=(
-            "Eres un agente amable de Industria de Alimentos el Mana.\n"
-            "Responde SOLO al saludo o conversación casual. Máximo 1-2 oraciones.\n"
-            "NO respondas preguntas sobre productos o la empresa aquí."
+            "Clasifica el mensaje en greeting, company, products u other. "
+            "Devuelve el mensaje original solo en el campo que corresponda y deja los demás vacíos. "
+            "greeting: saludos; company: información general NVIDIA; products: catálogo y especificaciones; "
+            "other: fuera del dominio."
         )),
-        HumanMessage(content=question),
-    ])
-    return {"greeting_response": response.content}
+        HumanMessage(content=pregunta),
+    ]
+    clasificacion: QuestionClassification = crear_llm(temperature=0).with_structured_output(
+        QuestionClassification
+    ).invoke(prompt)
+    return {
+        "greeting_question": clasificacion.greeting,
+        "company_question": clasificacion.company,
+        "products_question": clasificacion.products,
+        "other_question": clasificacion.other,
+    }
 
 
-def company_worker(state: CustomerState) -> dict:
-    question = state.get("company_question", "")
-    if not question.strip():
-        return {"company_response": ""}
-    llm = crear_llm(temperature=0.0)
-    response = llm.invoke([
-        SystemMessage(content=(
-            "Eres un agente de Industria de Alimentos el Mana.\n"
-            "Responde SOLO con información de la base de conocimiento.\n"
-            "Si no está en la base, di que no tienes esa información.\n\n"
-            f"BASE DE CONOCIMIENTO (empresa):\n{KB_EMPRESA}"
-        )),
-        HumanMessage(content=question),
-    ])
-    return {"company_response": response.content}
+# ════════════════════════════════════════════════════════════
+#  TRABAJADORES ESPECIALIZADOS
+# ════════════════════════════════════════════════════════════
+def greeting_worker(state: dict) -> dict:
+    greeting = state.get("greeting_question", "")
+    if greeting:
+        return {"greeting_response": f"¡Hola! Soy {NOMBRE_AGENTE}, especialista en tecnología NVIDIA. ¿En qué puedo ayudarte?"}
+    return {"greeting_response": ""}
 
 
-def products_worker(state: CustomerState) -> dict:
-    question = state.get("products_question", "")
-    if not question.strip():
-        return {"products_response": ""}
-    llm = crear_llm(temperature=0.0)
-    response = llm.invoke([
-        SystemMessage(content=(
-            "Eres un agente de Industria de Alimentos el Mana.\n"
-            "Responde SOLO con el catálogo de productos. Incluye precios exactos.\n"
-            "Si el producto no está en el catálogo, dilo amablemente.\n\n"
-            f"CATÁLOGO DE PRODUCTOS:\n{KB_PRODUCTOS}"
-        )),
-        HumanMessage(content=question),
-    ])
-    return {"products_response": response.content}
+def company_worker(state: dict) -> dict:
+    company = state.get("company_question", "")
+    if company:
+        respuesta = f"""**🏢 Información de NVIDIA**
+
+Somos líderes en tecnología de computación visual e IA.
+
+• 🎮 **GeForce RTX**: La mejor experiencia para gaming y creadores.
+• 🤖 **IA y Aprendizaje Automático**: Plataformas NVIDIA AI para desarrollo.
+• 🚗 **Automotive**: Soluciones para vehículos autónomos.
+• 🏥 **Salud**: IA para descubrimiento de fármacos y imágenes médicas.
+• 🌍 **Sostenimiento**: Centros de datos eficientes con tecnología NVIDIA.
+
+{KB_EMPRESA[:600] if KB_EMPRESA else ""}"""
+        return {"company_response": respuesta}
+    return {"company_response": ""}
 
 
-def fallback_worker(state: CustomerState) -> dict:
-    question = state.get("other_question", "")
-    if not question.strip():
-        return {"other_response": ""}
-    llm = crear_llm(temperature=0.3)
-    response = llm.invoke([
-        SystemMessage(content=(
-            "Eres un agente de Industria de Alimentos el Mana.\n\n"
-            "El cliente preguntó algo FUERA de tu alcance.\n"
-            "Debes:\n"
-            "  1) Disculparte brevemente.\n"
-            "  2) Aclarar que SÍ puedes ayudar con:\n"
-            f"{DOMINIOS_SOPORTADOS}\n"
-            "  3) Invitarlo a reformular.\n\n"
-            "NO intentes responder la pregunta original. NO inventes datos.\n"
-            "Máximo 3-4 oraciones, tono cálido."
-        )),
-        HumanMessage(content=f"Pregunta fuera de alcance: {question}"),
-    ])
-    return {"other_response": response.content}
+def products_worker(state: dict) -> dict:
+    products = state.get("products_question", "")
+    if products:
+        respuesta = f"""**🛒 Catálogo de Productos NVIDIA**
+
+Trabajamos con las tecnologías más avanzadas:
+
+• 🃏 **GPUs GeForce**: Serie RTX 4090, 4080, 4070 para gaming definitivo.
+• 💻 **Processadores Grace**: Para computación de alto rendimiento.
+• 🧠 **IA y Software**: NVIDIA AI Enterprise, cuDIA, RAPIDS.
+• 🚗 **Drive**: Plataformas para automoción y transporte autónomo.
+• 📊 **Visualización**: Soluciones para diseño, renderizado y simulación.
+
+Principales categorías:
+• **Drivers y Software**: Controladores Game Ready, Studio, NVIDIA Omniverse.
+• **Hardware**: Tarjetas gráficas, servidores, sistemas integrados.
+• **Desarrollo**: Toolkits, bibliotecas optimizadas, SDKs.
+• **Soluciones Empresariales**: Plataformas para data center y nube.
+
+{KB_PRODUCTOS[:800] if KB_PRODUCTOS else ""}"""
+        return {"products_response": respuesta}
+    return {"products_response": ""}
 
 
-def aggregator(state: CustomerState) -> dict:
+def fallback_worker(state: dict) -> dict:
+    other = state.get("other_question", "")
+    if other:
+        return {"other_response": "⚠️ Consulta fuera de alcance. Puedo ayudarte con: soporte de drivers, especificaciones de productos, información sobre suites de IA, o consulta nuestro catálogo de productos NVIDIA."}
+    return {"other_response": ""}
+
+
+def aggregator(state: dict) -> dict:
     parts = []
-    if state.get("greeting_response"):
+    if state.get("greeting_question"):
         parts.append(f"[Saludo]\n{state['greeting_response']}")
-    if state.get("company_response"):
-        parts.append(f"[Info empresa]\n{state['company_response']}")
-    if state.get("products_response"):
+    if state.get("company_question"):
+        parts.append(f"[Empresa]\n{state['company_response']}")
+    if state.get("products_question"):
         parts.append(f"[Productos]\n{state['products_response']}")
-    if state.get("other_response"):
+    if state.get("other_question"):
         parts.append(f"[Fuera de alcance]\n{state['other_response']}")
 
     if not parts:
@@ -242,28 +212,27 @@ def aggregator(state: CustomerState) -> dict:
     combined = "\n\n".join(parts)
     llm = crear_llm(temperature=0.3)
     response = llm.invoke([
-        SystemMessage(content=(
-            "Eres el agente final de Industria de Alimentos el Mana.\n"
-            "Combina las respuestas de los especialistas en UNA SOLA respuesta natural.\n"
-            "Reglas:\n"
-            "- Empieza con el saludo (si lo hay)\n"
-            "- Responde cada tema en orden natural\n"
-            "- Si hay '[Fuera de alcance]', intégrala al final con amabilidad\n"
-            "- NO uses etiquetas como [Saludo] o [Productos]\n"
-            "- Cierra ofreciendo ayuda adicional\n"
-            "- Tono cálido, profesional, conciso"
-        )),
-        HumanMessage(content=(
-            f"Mensaje original del cliente: {state['messages'][-1].content}\n\n"
-            f"Respuestas de los especialistas:\n{combined}"
-        )),
+        SystemMessage(content=f"""Eres {NOMBRE_AGENTE}. Toma las respuestas de los especialistas y conviértelas en UNA SOLA respuesta natural.
+
+Reglas:
+- Empieza con el saludo (si lo hay)
+- Responde cada tema en orden natural
+- Si hay 'fuera de alcance', intégrala al final con amabilidad
+- NO uses etiquetas como [Saludo] o [Productos]
+- Cierra ofreciendo ayuda adicional
+- Tono técnico pero accesible, experto en soluciones NVIDIA
+- Cierra preguntando si necesitan ayuda específica con nuestros productos o tecnologías"""),
+        HumanMessage(content=f"""Mensaje original del cliente: {state['messages'][-1].content}
+
+Respuestas de los especialistas:
+{combined}""")
     ])
     return {"final_response": response.content}
 
 
-# ═══════════════════════════════════════════════════════════
+# ════════════════════════════════════════════════════════════
 #  GRAFO
-# ═══════════════════════════════════════════════════════════
+# ════════════════════════════════════════════════════════════
 def build_customer_agent():
     wf = StateGraph(CustomerState)
     wf.add_node("supervisor", supervisor)
@@ -286,9 +255,9 @@ def build_customer_agent():
 customer_agent = build_customer_agent()
 
 
-# ═══════════════════════════════════════════════════════════
+# ════════════════════════════════════════════════════════════
 #  API PÚBLICA
-# ═══════════════════════════════════════════════════════════
+# ════════════════════════════════════════════════════════════
 def invoke_customer_agent(query: str) -> dict:
     """Invoca el sub-grafo multiagente y devuelve un dict listo para la API."""
     initial_state = {
@@ -319,3 +288,10 @@ def invoke_customer_agent(query: str) -> dict:
             "fuera_de_alcance": result["other_response"],
         },
     }
+
+
+# ════════════════════════════════════════════════════════════
+#  CONSTANTES GLOBALES
+# ════════════════════════════════════════════════════════════
+NOMBRE_AGENTE = os.getenv("AGENT_NAME", "RetroTron")
+ROL_AGENTE = os.getenv("AGENT_ROLE", "Experto en soluciones de computación y IA")

@@ -1,0 +1,86 @@
+============================================================
+DOCUMENTO: 03_CATALOGO_PRODUCTOS_NVIDIA_GAMING_WORKSTATION_E_IA
+CATEGORIA: Catalogo Comercial, Especificaciones Tecnicas, Precios de Referencia y Software
+============================================================
+
+=== SECCION 1: SERIE GEFORCE RTX 40 Y RTX 40 SUPER (ARQUITECTURA ADA LOVELACE) ===
+
+1.1. NVIDIA GeForce RTX 4090:
+- Especificaciones: 24GB de memoria GDDR6X, bus de 384 bits, 16,384 nucleos CUDA, soporte DLSS 3.5 con Frame Generation y Ray Reconstruction.
+- Caso de uso ideal: Gaming extremo en 4K a 120Hz+ con Path Tracing activado, edicion de video 8K RAW y entrenamiento/inferencia local de modelos de lenguaje (LLMs). Precio de referencia (MSRP): $1,599 USD.
+
+1.2. NVIDIA GeForce RTX 4080 SUPER:
+- Especificaciones: 16GB de memoria GDDR6X ultrarrapida (23 Gbps), bus de 256 bits, 10,240 nucleos CUDA.
+- Caso de uso ideal: Rendimiento 4K Elite en juegos AAA y estaciones de trabajo de diseño 3D con excelente relacion costo-beneficio frente al modelo original. Precio de referencia: $999 USD.
+
+1.3. NVIDIA GeForce RTX 4080 (16GB y variante 12GB):
+- RTX 4080 16GB: 16GB GDDR6X, 9,728 nucleos CUDA, diseñada para gaming 4K de alto nivel y flujos de trabajo creativos pesados. Precio de referencia historico: $1,199 USD.
+- RTX 4080 12GB (Rebauzada comercialmente como RTX 4070 Ti): 12GB de memoria GDDR6X, bus de 192 bits, enfocada en el balance precio/rendimiento para 1440p a altos cuadros por segundo y 4K con DLSS.
+
+1.4. NVIDIA GeForce RTX 4070 Ti SUPER y RTX 4070 Ti:
+- RTX 4070 Ti SUPER: 16GB de memoria GDDR6X, bus ampliado a 256 bits, 8,448 nucleos CUDA. Ideal para quienes requieren 16GB de VRAM en resolucion 4K y proyectos en Unreal Engine 5. Precio de referencia: $799 USD.
+- RTX 4070 Ti: 12GB GDDR6X, 7,680 nucleos CUDA, excelente rendimiento en 1440p Ultra y 4K de entrada.
+
+1.5. NVIDIA GeForce RTX 4070 SUPER y RTX 4070:
+- RTX 4070 SUPER: 12GB GDDR6X, 7,168 nucleos CUDA (un 20% mas de nucleos que la 4070 estandar). El punto dulce del mercado para gaming en 1440p Ultra con Ray Tracing. Precio de referencia: $599 USD.
+- RTX 4070: 12GB GDDR6X, 5,888 nucleos CUDA, bajo consumo energetico (200W) y gran desempeño en 1440p. Precio de referencia actual: $549 USD.
+
+1.6. NVIDIA GeForce RTX 4060 Ti (8GB / 16GB) y RTX 4060:
+- RTX 4060 Ti (Versiones de 8GB y 16GB GDDR6): 4,352 nucleos CUDA; la variante de 16GB es altamente recomendada para entusiastas de IA local (Stable Diffusion / LLMs) y texturas pesadas con presupuesto contenido ($449 USD).
+- RTX 4060 8GB: 8GB GDDR6, 3,072 nucleos CUDA, consumo de solo 115W. La opcion mas vendida para gaming en 1080p Ultra con DLSS 3 Frame Generation ($299 USD).
+
+1.7. Comparativa Directa Generacional (Serie RTX 40 vs Serie RTX 30):
+Una RTX 4070 SUPER ($599 USD, 220W) supera en rendimiento bruto a una RTX 3080 ($699 USD, 320W) e iguala a la RTX 3090 en juegos a 1440p consumiendo un 35% menos de energia y añadiendo generacion de fotogramas por IA (DLSS 3). Por su parte, la RTX 4090 entrega hasta el doble de rendimiento en Ray Tracing que la RTX 3090.
+
+=== SECCION 2: SERIE PARA PROFESIONALES Y WORKSTATIONS (NVIDIA RTX / ADA) ===
+
+2.1. NVIDIA RTX 6000 Ada Generation:
+- Especificaciones: 48GB de memoria GDDR6 con codigo de correccion de errores (ECC), 18,176 nucleos CUDA, 568 Tensor Cores de 4ta Gen y 142 RT Cores de 3ra Gen.
+- Aplicacion profesional: La GPU definitiva para Workstations de cine, simulacion medica, gemelos digitales en Omniverse y ajuste fino (Fine-Tuning) de modelos de IA locales sin depender de la nube.
+
+2.2. NVIDIA RTX 5000 Ada Generation:
+- Especificaciones: 32GB de memoria GDDR6 con ECC, 12,800 nucleos CUDA.
+- Aplicacion profesional: Alta performance en diseño automotriz, arquitectura BIM, renderizado multipantalla 8K y analisis de datos cientificos.
+
+2.3. NVIDIA RTX 4500 Ada Generation:
+- Especificaciones: 24GB de memoria GDDR6 con ECC (segmento Medium-High Professional), 7,680 nucleos CUDA.
+- Aplicacion profesional: Estaciones de trabajo compactas para ingenieros y diseñadores 3D que necesitan gran capacidad de VRAM y eficiencia termica.
+
+2.4. NVIDIA RTX A4500 (Arquitectura Ampere):
+- Especificaciones: 20GB de memoria GDDR6 con ECC, 7,168 nucleos CUDA y soporte para NVLink de 2 vias.
+- Aplicacion profesional: Certificacion ISV completa para software empresarial CAD/CAE como SolidWorks, AutoCAD, CATIA, Siemens NX y Ansys.
+
+=== SECCION 3: INTELIGENCIA ARTIFICIAL, DATA CENTER Y DESARROLLO EMBEBIDO ===
+
+3.1. NVIDIA Blackwell B200 y B100 Tensor Core (Ultima Generacion Data Center):
+- Especificaciones: Hasta 192GB de memoria HBM3e con 8 TB/s de ancho de banda y motor Transformer Engine de segunda generacion con precision FP4/FP8.
+- Caso de uso: Entrenamiento e inferencia en tiempo real de modelos fundacionales de billones de parametros (GPT-4+, modelos multimodales) con hasta 30 veces mas rendimiento en inferencia que la generacion previa.
+
+3.2. NVIDIA H200 y NVIDIA H100 Tensor Core (Arquitectura Hopper):
+- NVIDIA H200: 141GB de memoria HBM3e a 4.8 TB/s, diseñada para acelerar drasticamente la inferencia de LLMs y computacion cientifica de alto rendimiento (HPC).
+- NVIDIA H100: 80GB de memoria HBM3, el estandar mundial para el entrenamiento de IA generativa empresarial y clusters de supercomputacion en la nube.
+
+3.3. NVIDIA A100 Tensor Core (40GB / 80GB HBM2e):
+- Especificaciones: Basada en arquitectura Ampere con tecnologia Multi-Instance GPU (MIG), que permite particionar una sola A100 en hasta 7 instancias independientes de GPU aisladas por hardware para cargas de trabajo empresariales de IA y analitica de datos.
+
+3.4. NVIDIA L4 Tensor Core:
+- Especificaciones: 24GB GDDR6, formato de bajo perfil (Low-Profile) y consumo ultra eficiente de solo 72W (sin conectores de energia adicionales).
+- Caso de uso: Inferencia de IA a gran escala, transcodificacion de video AV1 en servidores de streaming y escritorios virtuales (vGPU).
+
+3.5. NVIDIA Jetson Orin (Nano, NX y AGX Orin):
+- Especificaciones: Modulos System-on-Module (SoM) que entregan hasta 275 TOPS de rendimiento en IA (en el modelo AGX Orin 64GB).
+- Caso de uso: IA embebida en el borde (Edge AI), robotica autonoma, drones industriales, vision artificial en fabricas inteligentes y vehiculos autonomos con el stack NVIDIA Isaac ROS.
+
+=== SECCION 4: ECOSISTEMA DE SOFTWARE NVIDIA (SOFTWARE ECOLOGY) ===
+
+4.1. NVIDIA Studio Drivers vs NVIDIA Game Ready Drivers:
+- Studio Drivers: Validados con desarrolladores de Adobe, Autodesk, Blender y Blackmagic Design para garantizar cero fallos en entregas profesionales.
+- Game Ready Drivers: Optimizados para baja latencia con NVIDIA Reflex y maximo framerate en titulos competitivos y AAA.
+
+4.2. NVIDIA AI Enterprise:
+- Descripcion: Suite de software nativa de la nube y con soporte empresarial completo que incluye marcos de trabajo pre-optimizados como NVIDIA NIM (microservices de inferencia), NeMo (para LLMs), TensorRT-LLM y Triton Inference Server para desplegar agentes RAG e IA generativa en produccion de forma segura.
+
+4.3. Toolkits de Desarrollo: CUDA, cuDNN, RAPIDS y NVIDIA Omniverse:
+- CUDA y cuDNN: Plataforma de computacion paralela y libreria de redes neuronales profundas que sirve de base para PyTorch, TensorFlow y JAX.
+- NVIDIA RAPIDS: Conjunto de librerias de codigo abierto (como cuDF y cuML) que permite ejecutar pipelines de Ciencia de Datos y Pandas/Scikit-learn completamente acelerados en la GPU sin cambiar la sintaxis de Python.
+- NVIDIA Omniverse: Plataforma basada en OpenUSD para conectar herramientas de diseño 3D en tiempo real, construir gemelos digitales industriales y entrenar robots en entornos fisicamente precisos (NVIDIA Isaac Sim).

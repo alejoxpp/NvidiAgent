@@ -2,7 +2,7 @@
 core/rag.py — Motor de RAG (Retrieval Augmented Generation)
 Seminario: Agentes de IA · Sesión 6 (Despliegue)
 
-Lee los documentos reales de data/documentos/ (PDFs + CSV) y responde
+Lee los documentos reales de data/documentos/ (TXT, PDF de respaldo y CSV) y responde
 preguntas basándose en su contenido — el mismo concepto de la Sesión 4,
 adaptado para desplegarse sin dependencias pesadas de embeddings
 (nada de sentence-transformers/torch — más liviano y rápido de
@@ -27,7 +27,10 @@ from langchain_community.document_loaders import PyPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_core.documents import Document
 
+PROJECT_DIR = Path(__file__).resolve().parents[1]
 DOCUMENTOS_DIR = Path(os.getenv("DOCUMENTOS_DIR", "data/documentos"))
+if not DOCUMENTOS_DIR.is_absolute():
+    DOCUMENTOS_DIR = PROJECT_DIR / DOCUMENTOS_DIR
 TAMANO_FRAGMENTO = int(os.getenv("TAMANO_FRAGMENTO", "900"))
 SUPERPOSICION_FRAGMENTO = int(os.getenv("SUPERPOSICION_FRAGMENTO", "120"))
 K_FRAGMENTOS = int(os.getenv("K_FRAGMENTOS", "4"))
@@ -56,9 +59,22 @@ def palabras_clave(texto: str) -> set:
     return {p for p in normalizar(texto).split() if p not in STOPWORDS_ES and len(p) > 1}
 
 
+def _cargar_txt() -> list:
+    documentos = []
+    for ruta in sorted(DOCUMENTOS_DIR.glob("*.txt")):
+        texto = ruta.read_text(encoding="utf-8")
+        documentos.append(Document(
+            page_content=texto,
+            metadata={"source": str(ruta), "page": 0},
+        ))
+    return documentos
+
+
 def _cargar_pdfs() -> list:
     documentos = []
     for ruta in sorted(DOCUMENTOS_DIR.glob("*.pdf")):
+        if ruta.with_suffix(".txt").exists():
+            continue
         documentos.extend(PyPDFLoader(str(ruta)).load())
     return documentos
 
@@ -73,7 +89,7 @@ def _cargar_csv() -> list:
 
 
 class MotorRAG:
-    """Índice de búsqueda sobre los documentos internos de la empresa."""
+    """Índice de búsqueda sobre la base de conocimiento NVIDIA."""
 
     def __init__(self):
         self.paginas: list = []
@@ -84,7 +100,7 @@ class MotorRAG:
         if not DOCUMENTOS_DIR.exists():
             print(f"  ⚠️  Carpeta de documentos no encontrada: {DOCUMENTOS_DIR}")
             return
-        documentos = _cargar_pdfs() + _cargar_csv()
+        documentos = _cargar_txt() + _cargar_pdfs() + _cargar_csv()
         self.paginas = documentos
         splitter = RecursiveCharacterTextSplitter(
             chunk_size=TAMANO_FRAGMENTO, chunk_overlap=SUPERPOSICION_FRAGMENTO
